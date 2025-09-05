@@ -1,3 +1,5 @@
+import discord
+import opuslib
 import os
 import re
 import asyncio
@@ -7,6 +9,23 @@ from collections import deque
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
+
+# Load Opus for voice functionality
+if not discord.opus.is_loaded():
+    try:
+        # Use the path we configured earlier for opuslib
+        discord.opus.load_opus('/nix/store/0py9xncsn0s6vqxhvqblvhs2cqbb30s8-libopus-1.5.2/lib/libopus.so.0')
+        print("✅ Opus loaded successfully!")
+    except Exception as e:
+        print(f"❌ Failed to load Opus: {e}")
+        # Try alternative methods
+        try:
+            discord.opus.load_opus('libopus.so.0')
+        except:
+            try:
+                discord.opus.load_opus('libopus')
+            except:
+                print("⚠️ Warning: Could not load Opus. Voice functionality may not work.")
 
 import yt_dlp
 
