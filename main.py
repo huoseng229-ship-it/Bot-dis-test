@@ -1,18 +1,3 @@
-import imageio_ffmpeg as ffmpeg
-FFMPEG_PATH = ffmpeg.get_ffmpeg_exe()
-
-FFMPEG_OPTIONS = {
-    'before_options': '-nostdin',
-    'options': '-vn'
-}
-
-def make_source(url: str):
-    return discord.FFmpegPCMAudio(
-        url,
-        executable=FFMPEG_PATH,
-        before_options=FFMPEG_OPTIONS['before_options'],
-        options=FFMPEG_OPTIONS['options']
-    )
 import os
 import re
 import asyncio
@@ -20,11 +5,6 @@ from typing import Optional, Dict, Deque
 from collections import deque
 
 import discord
-import opuslib
-
-if not discord.opus.is_loaded():
-    discord.opus.load_opus('libopus.so.0')
-    
 from discord.ext import commands
 from dotenv import load_dotenv
 
@@ -89,15 +69,17 @@ YOUTUBE_URL_RE = re.compile(r'(https?://)?(www\.)?(youtube\.com|youtu\.be)/.+', 
 async def ytdlp_search(query: str) -> Track:
     with yt_dlp.YoutubeDL(YTDLP_OPTS) as ydl:
         info = ydl.extract_info(query, download=False)
+        if not info:
+            raise ValueError(f"Could not extract info from: {query}")
         if "_type" in info and info["_type"] == "playlist" and info.get("entries"):
             info = info["entries"][0]
         title = info.get("title", "Unknown")
         duration = info.get("duration")
-        webpage_url = info.get("webpage_url") or info.get("url")
+        webpage_url = info.get("webpage_url") or info.get("url") or ""
         formats = info.get("formats", [])
         audio_formats = [f for f in formats if f.get("acodec") != "none" and f.get("vcodec") == "none"]
         best = max(audio_formats, key=lambda f: f.get("abr", 0) or f.get("tbr", 0), default=None)
-        stream_url = best["url"] if best else info["url"]
+        stream_url = best["url"] if best else info.get("url", "")
         return Track(title=title, url=stream_url, webpage_url=webpage_url, requester="?", duration=duration)
 
 def make_source(url: str) -> discord.PCMVolumeTransformer:
@@ -231,14 +213,3 @@ if __name__ == "__main__":
         raise RuntimeError("Thiếu DISCORD_TOKEN trong .env/Secrets")
     bot.run(TOKEN)
 
-# -------- YTDLP Options --------
-YTDLP_OPTS = {
-    "format": "bestaudio/best",
-    "noplaylist": True,
-    "quiet": True,
-    "default_search": "ytsearch",
-    "source_address": "0.0.0.0",
-    "extract_flat": False,
-    "cachedir": False,
-    "cookiefile": "cookies.txt",  # <--- Thêm dòng này
-}
