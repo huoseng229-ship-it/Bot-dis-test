@@ -15,9 +15,9 @@ if not discord.opus.is_loaded():
     try:
         # Use the path we configured earlier for opuslib
         discord.opus.load_opus('/nix/store/0py9xncsn0s6vqxhvqblvhs2cqbb30s8-libopus-1.5.2/lib/libopus.so.0')
-        print("✅ Opus loaded successfully!")
+        print("✅ Opus đã được tải thành công.")
     except Exception as e:
-        print(f"❌ Failed to load Opus: {e}")
+        print(f"❌ Lỗi khi tải opus: {e}")
         # Try alternative methods
         try:
             discord.opus.load_opus('libopus.so.0')
@@ -144,7 +144,7 @@ async def on_ready():
 @bot.command(name="hát")
 async def hat_cmd(ctx: commands.Context, *, query: str):
     if ctx.author.voice is None or ctx.author.voice.channel is None:
-        return await ctx.send("Mày vào kênh thoại đi rồi kêu tao hát.")
+        return await ctx.send("Bạn vào kênh thoại ik,mình hát cho bạn👉👈.")
 
     if ctx.guild.voice_client is None:
         await ctx.author.voice.channel.connect()
@@ -156,7 +156,7 @@ async def hat_cmd(ctx: commands.Context, *, query: str):
     track = await ytdlp_search(query)
     track.requester = str(ctx.author)
 
-    await ctx.send(f"🎵 Đã bỏ: **{track.title}** (`{track.pretty_duration()}`)")
+    await ctx.send(f"🎵: **{track.title}** (`{track.pretty_duration()}`)")
 
     voice = ctx.guild.voice_client
     if not voice.is_playing() and not voice.is_paused() and state.now_playing is None:
@@ -173,10 +173,10 @@ async def dung_cmd(ctx: commands.Context):
         vc.pause()
         await ctx.send("⏸️")
     else:
-        await ctx.send("Không có hát")
+        await ctx.send("Hiện không có bài nào")
 
 # Qua bài
-@bot.command(name="qua bài")
+@bot.command(name="bỏ qua")
 async def qua_bai_cmd(ctx: commands.Context):
     vc = ctx.guild.voice_client
     if vc and (vc.is_playing() or vc.is_paused()):
@@ -186,7 +186,7 @@ async def qua_bai_cmd(ctx: commands.Context):
         await ctx.send("Có mở bài nào đâu mà bỏ qua.")
 
 # Lặp lại
-@bot.command(name="lặp lại")
+@bot.command(name="lại")
 async def lap_lai_cmd(ctx: commands.Context):
     state = get_state(ctx.guild)
     state.loop = not state.loop
@@ -206,11 +206,11 @@ async def im_cmd(ctx: commands.Context):
         await ctx.send("Tao có hát đâu mà im được")
 
 # Hàng chờ
-@bot.command(name="hàng chờ")
+@bot.command(name="danh.sách")
 async def hang_cho_cmd(ctx: commands.Context):
     state = get_state(ctx.guild)
     if not state.queue:
-        return await ctx.send("Hàng chờ trống.")
+        return await ctx.send("Đéo có bài nào cả!.")
     lines = []
     for i, t in enumerate(list(state.queue)[:10], start=1):
         lines.append(f"{i}. **{t.title}** (`{t.pretty_duration()}`) • {t.requester}")
